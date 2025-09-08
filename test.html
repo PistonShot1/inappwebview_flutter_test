@@ -4,182 +4,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CORS Test</title>
+    <title>Flutter InAppWebView Test - Raw HTML</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
-            line-height: 1.6;
+            color: #333;
         }
 
         .container {
-            background: #f4f4f4;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-
-        input[type="text"] {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+            text-align: center;
         }
 
-        button {
-            background: #007cba;
+        h1 {
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .status-section {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #4299e1;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 12px 24px;
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            padding: 15px 30px;
+            border-radius: 50px;
             font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
-        button:hover {
-            background: #005a8a;
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
 
-        #result {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 4px;
-            white-space: pre-wrap;
-            font-family: monospace;
-            max-height: 400px;
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .test-data {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .test-data h3 {
+            color: #c53030;
+            margin-bottom: 10px;
+        }
+
+        .test-data ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .test-data li {
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            background: #f7fafc;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            padding: 20px;
+            border-left: 5px solid;
+            animation: slideInRight 0.3s ease-out;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toast:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast.success {
+            border-left-color: #48bb78;
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+        }
+
+        .toast.info {
+            border-left-color: #4299e1;
+            background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+        }
+
+        .toast.error {
+            border-left-color: #f56565;
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+        }
+
+        .toast-message {
+            font-weight: 600;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+
+        .toast-time {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .toast-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .log-section {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            max-height: 200px;
             overflow-y: auto;
         }
 
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
         }
 
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .log-entry.info {
+            background: rgba(66, 153, 225, 0.2);
         }
 
-        .info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+        .log-entry.success {
+            background: rgba(72, 187, 120, 0.2);
+        }
+
+        .log-entry.error {
+            background: rgba(245, 101, 101, 0.2);
         }
     </style>
 </head>
 
 <body>
-    <h1>CORS Test Tool</h1>
-    <p>Enter your backend endpoint URL and click "Make Request" to test CORS headers.</p>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <div class="container">
-        <label for="endpoint">Backend Endpoint URL:</label>
-        <input type="text" id="endpoint" placeholder="https://your-backend.com/api/endpoint" value="">
+        <h1>🚀 Flutter InAppWebView Test</h1>
+        <p style="margin-bottom: 30px; color: #718096; font-size: 18px;">
+            Raw HTML test page for Flutter communication
+        </p>
 
-        <button onclick="makeRequest()">Make Request</button>
+        <div class="status-section">
+            <h3>📱 Auto-trigger Status</h3>
+            <p>Listening for <code>flutterInAppWebViewPlatformReady</code> event...</p>
+            <p>Will automatically call <code>handlerInsiderPurchaseEvent</code> when ready.</p>
+        </div>
 
-        <div class="info">
-            <strong>Instructions:</strong>
-            <ol>
-                <li>Enter your backend URL above</li>
-                <li>Click "Make Request"</li>
-                <li>Open browser DevTools → Network tab</li>
-                <li>Look for CORS headers in the response</li>
-            </ol>
+        <div>
+            <button class="button" onclick="manualTrigger()">
+                🔴 Manual Trigger
+            </button>
+            <button class="button" onclick="clearLogs()" style="background: #718096;">
+                🗑️ Clear Logs
+            </button>
+            <button class="button" onclick="testConnection()" style="background: #38a169;">
+                🔍 Test Connection
+            </button>
+        </div>
+
+        <div class="test-data">
+            <h3>📋 Test Data</h3>
+            <ul>
+                <li><strong>Handler:</strong> handlerInsiderPurchaseEvent</li>
+                <li><strong>Param 1:</strong> 1 (number)</li>
+                <li><strong>Param 2:</strong> true (boolean)</li>
+                <li><strong>Param 3:</strong> ['bar', 5] (array)</li>
+                <li><strong>Param 4:</strong> {item_name: 'baz', price: 'RM 24.00'} (object)</li>
+            </ul>
+        </div>
+
+        <div class="log-section" id="logSection">
+            <div style="text-align: center; opacity: 0.7;">Console logs will appear here...</div>
         </div>
     </div>
 
-    <div id="result"></div>
-
     <script>
-        async function makeRequest() {
-            const endpoint = document.getElementById('endpoint').value.trim();
-            const resultDiv = document.getElementById('result');
+        // Toast notification system
+        let toastId = 0;
 
-            if (!endpoint) {
-                showResult('Please enter an endpoint URL', 'error');
-                return;
+        function addToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.id = `toast-${++toastId}`;
+
+            const now = new Date().toLocaleTimeString();
+
+            toast.innerHTML = `
+                <button class="toast-close" onclick="removeToast('${toast.id}')">&times;</button>
+                <div class="toast-message">${message}</div>
+                <div class="toast-time">${now}</div>
+            `;
+
+            document.getElementById('toastContainer').appendChild(toast);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                removeToast(toast.id);
+            }, 5000);
+
+            // Add to console log
+            addLog(message, type);
+        }
+
+        function removeToast(toastId) {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }
+        }
+
+        // Console log system
+        function addLog(message, type = 'info') {
+            const logSection = document.getElementById('logSection');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+
+            // Remove placeholder text
+            if (logSection.innerHTML.includes('Console logs will appear here')) {
+                logSection.innerHTML = '';
             }
 
-            showResult('Making request...', 'info');
+            logSection.appendChild(logEntry);
+            logSection.scrollTop = logSection.scrollHeight;
+        }
 
-            try {
-                console.log('Making fetch request to:', endpoint);
+        function clearLogs() {
+            const logSection = document.getElementById('logSection');
+            logSection.innerHTML = '<div style="text-align: center; opacity: 0.7;">Console logs cleared...</div>';
+            addToast('📝 Logs cleared', 'info');
+        }
 
-                const response = await fetch(endpoint, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
+        // Flutter InAppWebView communication
+        function sendToFlutter() {
+            addToast('🔄 Setting up Flutter event listener...', 'info');
+
+            window.addEventListener("flutterInAppWebViewPlatformReady", function (event) {
+                addToast('🚀 flutterInAppWebViewPlatformReady event fired!', 'success');
+                console.log('Flutter platform ready event:', event);
+
+                if (window.flutter_inappwebview) {
+                    addToast('📱 Calling handlerInsiderPurchaseEvent...', 'info');
+
+                    window.flutter_inappwebview.callHandler(
+                        'handlerInsiderPurchaseEvent',
+                        1,
+                        true,
+                        ['bar', 5],
+                        { item_name: 'baz', price: 'RM 24.00' }
+                    ).then(function (result) {
+                        console.log('Handler result:', result);
+                        addToast(`✅ handlerInsiderPurchaseEvent completed! Result: ${JSON.stringify(result)}`, 'success');
+                    }).catch(function (error) {
+                        console.error('Handler error:', error);
+                        addToast(`❌ handlerInsiderPurchaseEvent failed: ${JSON.stringify(error)}`, 'error');
+                    });
+                } else {
+                    addToast('❌ Flutter InAppWebView not available', 'error');
+                }
+            });
+        }
+
+        // Manual trigger function
+        function manualTrigger() {
+            addToast('🔴 Manual trigger initiated...', 'info');
+
+            if (window.flutter_inappwebview) {
+                addToast('📱 Manual: Calling handlerInsiderPurchaseEvent...', 'info');
+
+                window.flutter_inappwebview.callHandler(
+                    'handlerInsiderPurchaseEvent',
+                    1,
+                    true,
+                    ['bar', 5],
+                    { item_name: 'baz', price: 'RM 24.00' }
+                ).then(function (result) {
+                    console.log('Manual trigger result:', result);
+                    addToast(`✅ Manual trigger completed! Result: ${JSON.stringify(result)}`, 'success');
+                }).catch(function (error) {
+                    console.error('Manual trigger error:', error);
+                    addToast(`❌ Manual trigger failed: ${JSON.stringify(error)}`, 'error');
                 });
-
-                console.log('Response received:', response);
-                console.log('Response headers:');
-
-                // Log all response headers to console
-                for (let [key, value] of response.headers.entries()) {
-                    console.log(`${key}: ${value}`);
-                }
-
-                const data = await response.text();
-
-                let result = `✅ Request successful!\n\n`;
-                result += `Status: ${response.status} ${response.statusText}\n`;
-                result += `URL: ${response.url}\n\n`;
-
-                result += `Response Headers:\n`;
-                result += `==================\n`;
-                for (let [key, value] of response.headers.entries()) {
-                    result += `${key}: ${value}\n`;
-                }
-
-                result += `\nResponse Body:\n`;
-                result += `==============\n`;
-                result += data.substring(0, 1000) + (data.length > 1000 ? '\n... (truncated)' : '');
-
-                showResult(result, 'success');
-
-            } catch (error) {
-                console.error('Fetch error:', error);
-
-                let result = `❌ Request failed!\n\n`;
-                result += `Error: ${error.message}\n\n`;
-
-                if (error.message.includes('CORS')) {
-                    result += `This is likely a CORS error. Check:\n`;
-                    result += `1. Backend CORS configuration\n`;
-                    result += `2. Network tab in DevTools for more details\n`;
-                    result += `3. Browser console for CORS error messages`;
-                } else if (error.message.includes('fetch')) {
-                    result += `This could be:\n`;
-                    result += `1. Network connectivity issue\n`;
-                    result += `2. Invalid URL\n`;
-                    result += `3. Server not responding`;
-                }
-
-                showResult(result, 'error');
+            } else {
+                addToast('❌ Flutter InAppWebView not available for manual trigger', 'error');
             }
         }
 
-        function showResult(message, type) {
-            const resultDiv = document.getElementById('result');
-            resultDiv.textContent = message;
-            resultDiv.className = type;
+        // Test connection function
+        function testConnection() {
+            addToast('🔍 Testing Flutter connection...', 'info');
+
+            if (typeof window.flutter_inappwebview !== 'undefined') {
+                addToast('✅ Flutter InAppWebView object detected!', 'success');
+
+                // Try to call a test handler
+                if (window.flutter_inappwebview.callHandler) {
+                    addToast('📞 callHandler method available', 'success');
+                } else {
+                    addToast('⚠️ callHandler method not found', 'error');
+                }
+            } else {
+                addToast('❌ Flutter InAppWebView object not found', 'error');
+                addToast('💡 Make sure you\'re running this in Flutter InAppWebView', 'info');
+            }
+
+            // Check for the platform ready event
+            addToast('🎯 Manually dispatching platform ready event for testing...', 'info');
+            const event = new Event('flutterInAppWebViewPlatformReady');
+            window.dispatchEvent(event);
         }
 
-        // Allow Enter key to trigger request
-        document.getElementById('endpoint').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                makeRequest();
-            }
+        // Initialize when page loads
+        window.addEventListener('load', function () {
+            addToast('🔄 Page loaded successfully!', 'success');
+            addToast('⏳ Waiting for Flutter platform...', 'info');
+            sendToFlutter();
         });
+
+        // Override console methods to show in our log
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            addLog(`LOG: ${args.join(' ')}`, 'info');
+        };
+
+        console.error = function (...args) {
+            originalError.apply(console, args);
+            addLog(`ERROR: ${args.join(' ')}`, 'error');
+        };
     </script>
 </body>
 
