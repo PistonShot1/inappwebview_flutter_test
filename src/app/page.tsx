@@ -3,13 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 
 // Extend the Window interface to include flutter_inappwebview
-declare global {
-  interface Window {
-    flutter_inappwebview?: {
-      callHandler: (handler: string, ...args: unknown[]) => Promise<unknown>;
-    };
-  }
-}
 
 interface Toast {
   id: number;
@@ -45,9 +38,9 @@ export default function Home() {
     window.addEventListener("flutterInAppWebViewPlatformReady", function() {
       addToast("🚀 flutterInAppWebViewPlatformReady event fired!", "success");
       
-      if (window.flutter_inappwebview) {
+      if (window?.flutter_inappwebview) {
         addToast("📱 Calling handlerInsiderPurchaseEvent...", "info");
-        window.flutter_inappwebview.callHandler('handlerInsiderPurchaseEvent', 1, true, ['bar', 5], {item_name: 'baz' , price : "RM 24.00"}).then(function(result: unknown) {
+        window?.flutter_inappwebview.callHandler('handlerInsiderPurchaseEvent', 1, true, ['bar', 5], {item_name: 'baz' , price : "RM 24.00"}).then(function(result: unknown) {
           console.log(result);
           addToast(`✅ handlerInsiderPurchaseEvent completed! Result: ${JSON.stringify(result)}`, "success");
         }).catch(function(error: unknown) {
@@ -68,18 +61,18 @@ export default function Home() {
 
   const manualSendToFlutter = () => {
     // Manual trigger for testing
-    if (window.flutter_inappwebview) {
+
       addToast("📱 Manual trigger: Calling handlerInsiderPurchaseEvent...", "info");
-      window.flutter_inappwebview.callHandler('handlerInsiderPurchaseEvent', 1, true, ['bar', 5], {item_name: 'baz' , price : "RM 24.00"}).then(function(result: unknown) {
-        console.log('Manual trigger result:', result);
-        addToast(`✅ Manual trigger completed! Result: ${JSON.stringify(result)}`, "success");
-      }).catch(function(error: unknown) {
-        console.error('Manual trigger error:', error);
-        addToast(`❌ Manual trigger failed: ${JSON.stringify(error)}`, "error");
+      window.addEventListener("flutterInAppWebViewPlatformReady", function() {
+        window?.flutter_inappwebview?.callHandler('handlerInsiderPurchaseEvent', 1, true, ['bar', 5], {item_name: 'baz' , price : "RM 24.00"}).then(function(result: unknown) {
+          console.log('Manual trigger result:', result);
+          addToast(`✅ Manual trigger completed! Result: ${JSON.stringify(result)}`, "success");
+        }).catch(function(error: unknown) {
+          console.error('Manual trigger error:', error);
+          addToast(`❌ Manual trigger failed: ${JSON.stringify(error)}`, "error");
+        });
       });
-    } else {
-      addToast("❌ Flutter InAppWebView not available for manual trigger", "error");
-    }
+
   };
 
   return (
