@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #007cba;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #005a8a;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>CORS Test Tool</h1>
+    <p>Enter your backend endpoint URL and click "Make Request" to test CORS headers.</p>
+
+    <div class="container">
+        <label for="endpoint">Backend Endpoint URL:</label>
+        <input type="text" id="endpoint" placeholder="https://your-backend.com/api/endpoint" value="">
+
+        <button onclick="makeRequest()">Make Request</button>
+
+        <div class="info">
+            <strong>Instructions:</strong>
+            <ol>
+                <li>Enter your backend URL above</li>
+                <li>Click "Make Request"</li>
+                <li>Open browser DevTools → Network tab</li>
+                <li>Look for CORS headers in the response</li>
+            </ol>
+        </div>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        async function makeRequest() {
+            const endpoint = document.getElementById('endpoint').value.trim();
+            const resultDiv = document.getElementById('result');
+
+            if (!endpoint) {
+                showResult('Please enter an endpoint URL', 'error');
+                return;
+            }
+
+            showResult('Making request...', 'info');
+
+            try {
+                console.log('Making fetch request to:', endpoint);
+
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                console.log('Response received:', response);
+                console.log('Response headers:');
+
+                // Log all response headers to console
+                for (let [key, value] of response.headers.entries()) {
+                    console.log(`${key}: ${value}`);
+                }
+
+                const data = await response.text();
+
+                let result = `✅ Request successful!\n\n`;
+                result += `Status: ${response.status} ${response.statusText}\n`;
+                result += `URL: ${response.url}\n\n`;
+
+                result += `Response Headers:\n`;
+                result += `==================\n`;
+                for (let [key, value] of response.headers.entries()) {
+                    result += `${key}: ${value}\n`;
+                }
+
+                result += `\nResponse Body:\n`;
+                result += `==============\n`;
+                result += data.substring(0, 1000) + (data.length > 1000 ? '\n... (truncated)' : '');
+
+                showResult(result, 'success');
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+
+                let result = `❌ Request failed!\n\n`;
+                result += `Error: ${error.message}\n\n`;
+
+                if (error.message.includes('CORS')) {
+                    result += `This is likely a CORS error. Check:\n`;
+                    result += `1. Backend CORS configuration\n`;
+                    result += `2. Network tab in DevTools for more details\n`;
+                    result += `3. Browser console for CORS error messages`;
+                } else if (error.message.includes('fetch')) {
+                    result += `This could be:\n`;
+                    result += `1. Network connectivity issue\n`;
+                    result += `2. Invalid URL\n`;
+                    result += `3. Server not responding`;
+                }
+
+                showResult(result, 'error');
+            }
+        }
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = type;
+        }
+
+        // Allow Enter key to trigger request
+        document.getElementById('endpoint').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                makeRequest();
+            }
+        });
+    </script>
+</body>
+
+</html>
